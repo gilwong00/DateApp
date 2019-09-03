@@ -77,7 +77,7 @@ namespace DatingApp.API.Data
 
         for (int i = 0; i < computedHash.Length; i++)
         {
-          if (computedHash[i] != passwordHash[1])
+          if (computedHash[i] != passwordHash[i])
           {
             return false;
           }
