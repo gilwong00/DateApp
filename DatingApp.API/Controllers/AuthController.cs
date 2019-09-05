@@ -7,6 +7,7 @@ using DatingApp.API.Data;
 using DatingApp.API.DTO;
 using DatingApp.API.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -77,7 +78,7 @@ namespace DatingApp.API.Controllers
 
 			// signing credentials, we also make sure we use the token secret apart of the sigining credentials
 			var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
-			
+
 			var tokenDescriptor = new SecurityTokenDescriptor
 			{
 				Subject = new ClaimsIdentity(claims),
@@ -89,7 +90,13 @@ namespace DatingApp.API.Controllers
 
 			var token = tokenHandler.CreateToken(tokenDescriptor);
 
-			return Ok(new {
+			//	var cookie = HttpContext.Response.Cookies;
+			var cookieOptions = new CookieOptions();
+			cookieOptions.Expires = DateTime.Now.AddDays(1);
+			Response.Cookies.Append("user", tokenHandler.WriteToken(token), cookieOptions);
+
+			return Ok(new
+			{
 				token = tokenHandler.WriteToken(token)
 			});
 		}

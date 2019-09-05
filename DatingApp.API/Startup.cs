@@ -50,6 +50,23 @@ namespace DatingApp.API
 						ValidateAudience = false
 					};
 				});
+
+			// cookie setting for indentity user
+			// services.ConfigureApplicationCookie(options =>
+			// {
+			// 	options.Cookie.Name = "user";
+			// 	options.Cookie.Expiration = TimeSpan.FromDays(1);
+			// });
+
+			services.AddCors(options =>
+			{
+				options.AddPolicy("CORSPolicy",
+							// with orgins is the base of our client app
+							builder => builder.WithOrigins("http://localhost:4200")
+							.AllowAnyMethod()
+							.AllowAnyHeader()
+							.AllowCredentials());
+			});
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -66,8 +83,8 @@ namespace DatingApp.API
 				//app.UseHsts();
 			}
 
+			app.UseCors("CORSPolicy");
 			app.UseHttpsRedirection();
-			app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 			app.UseAuthentication();
 			app.UseMvc();
 		}
