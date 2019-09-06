@@ -24,7 +24,6 @@ export class NavComponent implements OnInit {
 
 	loggedIn() {
 		const token = localStorage.getItem('token');
-		console.log('dsf', token)
 		return !!token;
 	}
 
