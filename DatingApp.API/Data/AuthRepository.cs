@@ -59,6 +59,9 @@ namespace DatingApp.API.Data
       return user;
     }
 
+
+		// using the out keyword for passwordHash and passwordSalt means we updated the passed in reference
+		// dont need to return, the original reference gets updated
     private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
     {
       using (var salt = new System.Security.Cryptography.HMACSHA512())
