@@ -28,7 +28,7 @@ namespace DatingApp.API.Controllers
 		}
 
 		[HttpPost("register")]
-		public async Task<IActionResult> Register(RegisterUserDTO user)
+		public async Task<IActionResult> Register(RegisterUser user)
 		{
 			if (!ModelState.IsValid)
 			{
@@ -52,7 +52,7 @@ namespace DatingApp.API.Controllers
 		}
 
 		[HttpPost("login")]
-		public async Task<IActionResult> Login(LoginUserDTO user)
+		public async Task<IActionResult> Login(LoginUser user)
 		{
 			var dbUser = await _repo.Login(user.Username.ToLower(), user.Password.ToLower());
 

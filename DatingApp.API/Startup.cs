@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using AutoMapper;
 using DatingApp.API.Data;
 using DatingApp.API.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -35,9 +36,16 @@ namespace DatingApp.API
 		public void ConfigureServices(IServiceCollection services)
 		{
 			services.AddDbContext<DataContext>(x => x.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
-			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
+				.AddJsonOptions(opts =>
+				{
+					// Ignores self rep loop error
+					opts.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+				});
 			services.AddCors();
+			services.AddAutoMapper(typeof(DatingRepository).Assembly);
 			services.AddScoped<IAuthRepository, AuthRepository>();
+			services.AddScoped<IDatingRepository, DatingRepository>();
 			services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 				.AddJwtBearer(options =>
 				{
@@ -85,13 +93,15 @@ namespace DatingApp.API
 			{
 				// The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
 				//app.UseHsts();
-				app.UseExceptionHandler(builder => {
-					builder.Run(async context => {
+				app.UseExceptionHandler(builder =>
+				{
+					builder.Run(async context =>
+					{
 						context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
 						var error = context.Features.Get<IExceptionHandlerFeature>();
 
-						if (error != null) 
+						if (error != null)
 						{
 							// writes error message in response
 							context.Response.AddApplicationError(error.Error.Message);
