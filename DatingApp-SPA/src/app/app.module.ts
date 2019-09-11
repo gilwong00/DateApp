@@ -11,10 +11,11 @@ import { AuthService } from './services/auth.service';
 import { HomeComponent } from './home/home.component';
 import { RegisterComponent } from './register/register.component';
 import  { ErrorInterceptorProvider }  from './services/error.interceptor';
-import { MemberListComponent } from './member-list/member-list.component';
+import { MemberListComponent } from './member/member-list/member-list.component';
 import { ListsComponent } from './lists/lists.component';
 import { MessagesComponent } from './messages/messages.component';
-import { Router } from './routes'
+import { Router } from './routes';
+import { MemberCardComponent } from './member/member-card/member-card.component'
 
 @NgModule({
 	declarations: [
@@ -24,7 +25,8 @@ import { Router } from './routes'
 		RegisterComponent,
 		MemberListComponent,
 		ListsComponent,
-		MessagesComponent
+		MessagesComponent,
+		MemberCardComponent
 	],
 	imports: [
 		BrowserModule,
