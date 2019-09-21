@@ -25,7 +25,8 @@ namespace DatingApp.API.Data
 
     public async Task<User> Login(string username, string password)
     {
-      var user = await _context.Users.FirstOrDefaultAsync(x => x.Username == username);
+			// Photos is a seperate table that we need to join to users. Use Includes to tell entity to also get the users photos
+      var user = await _context.Users.Include(p => p.Photos).FirstOrDefaultAsync(x => x.Username == username);
 
       if (user == null)
       {
