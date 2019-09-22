@@ -38,6 +38,7 @@ namespace DatingApp.API.Helpers
 					dest => dest.Age,
 					opts => opts.MapFrom(
 						src => src.DateOfBirth.CalculateAge()));
+						
 			CreateMap<Photo, PhotoDetail>();
 
 			CreateMap<UserEdit, User>();
@@ -47,6 +48,8 @@ namespace DatingApp.API.Helpers
 			CreateMap<CreatePhoto, Photo>();
 
 			CreateMap<Photo, PhotoResponse>();
+
+			CreateMap<RegisterUser, User>();
 		}
 	}
 }
