@@ -82,6 +82,8 @@ namespace DatingApp.API
 							.AllowCredentials() // use this for cookies
 						);
 			});
+			// Adding our action filter
+			services.AddScoped<LogUserActivity>();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -27,15 +27,17 @@ import { MemberEditResolver } from './resolvers/member-edit.resolver ';
 import { PreventUnsavedChanges } from './guards/prevent-unsavedChanges.guard';
 import { PhotoEditorComponent } from './member/photo-editor/photo-editor.component';
 import { FileUploadModule } from 'ng2-file-upload';
+import { TimeAgoPipe } from 'time-ago-pipe';
+
 
 export function tokenGetter() {
 	return localStorage.getItem('token');
 }
 
-export class CustomHammerConfig extends HammerGestureConfig  {
+export class CustomHammerConfig extends HammerGestureConfig {
 	overrides = {
-			pinch: { enable: false },
-			rotate: { enable: false }
+		pinch: { enable: false },
+		rotate: { enable: false }
 	};
 }
 
@@ -51,7 +53,8 @@ export class CustomHammerConfig extends HammerGestureConfig  {
 		MemberCardComponent,
 		MemberDetailComponent,
 		MemberEditComponent,
-		PhotoEditorComponent
+		PhotoEditorComponent,
+		TimeAgoPipe
 	],
 	imports: [
 		BrowserModule,
