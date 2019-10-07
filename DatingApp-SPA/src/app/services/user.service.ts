@@ -1,34 +1,73 @@
 import { Injectable } from '@angular/core';
 import { environment } from 'src/environments/environment';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { User } from '../models/user';
+import { PaginatedResult } from '../models/pagination';
+import { map } from 'rxjs/operators';
 
 @Injectable({
-	providedIn: 'root'
+  providedIn: 'root',
 })
-
 export class UserService {
-	baseUrl: string = environment.apiUrl;
-	constructor(private http: HttpClient) { }
+  baseUrl: string = environment.apiUrl;
+  constructor(private http: HttpClient) {}
 
-	getUsers(): Observable<User[]> {
-		return this.http.get<User[]>(this.baseUrl + 'users');
-	}
+  getUsers(
+    page?,
+    itemsPerPage?,
+    userParams?
+  ): Observable<PaginatedResult<User[]>> {
+    const paginatedResults: PaginatedResult<User[]> = new PaginatedResult<
+      User[]
+    >();
+    let params = new HttpParams();
 
-	getUser(id: number): Observable<User> {
-		return this.http.get<User>(this.baseUrl + 'users/' + id);
-	}
+    if (page && itemsPerPage) {
+      params = params.append('pageNumber', page);
+      params = params.append('pageSize', itemsPerPage);
+    }
 
-	updateUser(id: number, user: User) {
-		return this.http.put(this.baseUrl + 'users/' + id, user);
-	}
+    if (userParams) {
+      for (let key in userParams) {
+        params = params.append(key, userParams[key]);
+      }
+    }
 
-	setMainPhoto(userId: number, photoId: number) {
-		return this.http.post(this.baseUrl + 'users/' + userId + '/photos/' + photoId + '/setMain', {});
-	}
+    return this.http
+      .get<User[]>(this.baseUrl + 'users', { observe: 'response', params })
+      .pipe(
+        map(response => {
+          paginatedResults.results = response.body;
 
-	deletePhoto(userId: number, photoId: number) {
-		return this.http.delete(this.baseUrl + 'users/' + userId + '/photos/' + photoId);
-	}
+          if (response.headers.get('Pagination')) {
+            paginatedResults.pagination = JSON.parse(
+              response.headers.get('Pagination')
+            );
+          }
+          return paginatedResults;
+        })
+      );
+  }
+
+  getUser(id: number): Observable<User> {
+    return this.http.get<User>(this.baseUrl + 'users/' + id);
+  }
+
+  updateUser(id: number, user: User) {
+    return this.http.put(this.baseUrl + 'users/' + id, user);
+  }
+
+  setMainPhoto(userId: number, photoId: number) {
+    return this.http.post(
+      this.baseUrl + 'users/' + userId + '/photos/' + photoId + '/setMain',
+      {}
+    );
+  }
+
+  deletePhoto(userId: number, photoId: number) {
+    return this.http.delete(
+      this.baseUrl + 'users/' + userId + '/photos/' + photoId
+    );
+  }
 }
