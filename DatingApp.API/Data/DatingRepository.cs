@@ -41,6 +41,18 @@ namespace DatingApp.API.Data
 				.Where(u => u.Id != userParams.UserId)
 				.Where(x => x.Gender == userParams.Gender);
 
+			if (userParams.Likers)
+			{
+				var likers = await GetUserLikes(userParams.UserId, userParams.Likers);
+				users = users.Where(u => likers.Contains(u.Id)); // filtering out people that has liked the logged in users
+			}
+
+			if (userParams.Likees)
+			{
+				var likees = await GetUserLikes(userParams.UserId, userParams.Likers);
+				users = users.Where(u => likees.Contains(u.Id)); // filtering out users the current logged in user has liked
+			}
+
 			// Age filtering. If min and or max age is specified
 			if (userParams.MinAge != 18 || userParams.MaxAge != 99)
 			{
@@ -65,6 +77,28 @@ namespace DatingApp.API.Data
 			return await PagedList<User>.CreateAsync(users, userParams.PageNumber, userParams.PageSize);
 		}
 
+		// returns list of likers or likees
+		private async Task<IEnumerable<int>> GetUserLikes(int id, bool likers)
+		{
+			var user = await _context.Users
+				.Include(x => x.Likers)
+				.Include(x => x.Likees)
+				.FirstOrDefaultAsync(u => u.Id == id);
+
+			// if likers get list of users that has liked the logged in user
+			if (likers)
+			{
+				return user.Likers
+					.Where(u => u.LikeeId == id) // get list of user the logged in user has liked
+					.Select(i => i.LikerId); // returns list of people that likes the logged in user
+			}
+			else
+			{
+				// get list of people the logged in user has liked
+				return user.Likees.Where(u => u.LikerId == id).Select(i => i.LikeeId);
+			}
+		}
+
 		public async Task<bool> SaveAll()
 		{
 			// if SaveChangesAsync returns 0 that means no changes were saved
@@ -81,6 +115,11 @@ namespace DatingApp.API.Data
 		public async Task<Photo> GetMainUserPhoto(int userId)
 		{
 			return await _context.Photos.Where(u => u.UserId == userId).FirstOrDefaultAsync(p => p.IsMain);
+		}
+
+		public async Task<Like> GetLike(int userId, int recipientId)
+		{
+			return await _context.Likes.FirstOrDefaultAsync(u => u.LikerId == userId && u.LikeeId == recipientId);
 		}
 	}
 }
