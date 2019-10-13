@@ -8,9 +8,10 @@ import { MemberDetailComponent } from './member/member-detail/member-detail.comp
 import { MemberDetailResolver } from './resolvers/member-detail.resolver';
 import { MemberListResolver } from './resolvers/member-list.resolver';
 import { MemberEditComponent } from './member/member-edit/member-edit.component';
-import { MemberEditResolver } from './resolvers/member-edit.resolver ';
+import { MemberEditResolver } from './resolvers/member-edit.resolver';
 import { PreventUnsavedChanges } from './guards/prevent-unsavedChanges.guard';
 import { ListsResolver } from './resolvers/lists.resolver';
+import { MessagesResolver } from './resolvers/messages.resolver';
 
 export const Router: Routes = [
 	{ path: '', component: HomeComponent },
@@ -23,7 +24,7 @@ export const Router: Routes = [
 			{ path: 'members', component: MemberListComponent, resolve: { users: MemberListResolver } },
 			{ path: 'members/:id', component: MemberDetailComponent, resolve: { user: MemberDetailResolver } },
 			{ path: 'member/edit', component: MemberEditComponent, resolve: { user: MemberEditResolver }, canDeactivate: [PreventUnsavedChanges] },
-			{ path: 'messages', component: MessagesComponent },
+			{ path: 'messages', component: MessagesComponent, resolve: { messages: MessagesResolver } },
 			{ path: 'lists', component: ListsComponent, resolve: { users: ListsResolver } },
 		],
 	},

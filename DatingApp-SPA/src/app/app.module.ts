@@ -23,12 +23,14 @@ import { MemberDetailComponent } from './member/member-detail/member-detail.comp
 import { MemberDetailResolver } from './resolvers/member-detail.resolver';
 import { MemberListResolver } from './resolvers/member-list.resolver';
 import { MemberEditComponent } from './member/member-edit/member-edit.component';
-import { MemberEditResolver } from './resolvers/member-edit.resolver ';
+import { MemberEditResolver } from './resolvers/member-edit.resolver';
 import { PreventUnsavedChanges } from './guards/prevent-unsavedChanges.guard';
 import { PhotoEditorComponent } from './member/photo-editor/photo-editor.component';
 import { FileUploadModule } from 'ng2-file-upload';
 import { TimeAgoPipe } from 'time-ago-pipe';
 import { ListsResolver } from './resolvers/lists.resolver';
+import { MessagesResolver } from './resolvers/messages.resolver';
+import { MemberMessageComponent } from './member/member-message/member-message.component';
 
 
 export function tokenGetter() {
@@ -55,7 +57,8 @@ export class CustomHammerConfig extends HammerGestureConfig {
 		MemberDetailComponent,
 		MemberEditComponent,
 		PhotoEditorComponent,
-		TimeAgoPipe
+		TimeAgoPipe,
+		MemberMessageComponent
 	],
 	imports: [
 		BrowserModule,
@@ -87,7 +90,8 @@ export class CustomHammerConfig extends HammerGestureConfig {
 		MemberEditResolver,
 		{ provide: HAMMER_GESTURE_CONFIG, useClass: CustomHammerConfig },
 		PreventUnsavedChanges,
-		ListsResolver
+		ListsResolver,
+		MessagesResolver
 	],
 	bootstrap: [AppComponent]
 })
