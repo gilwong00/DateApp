@@ -133,4 +133,13 @@ export class UserService {
 	sendMessage(id: number, message: Message) {
 		return this.http.post(`${this.baseUrl}users/${id}/messages`, message);
 	}
+
+	deleteMessage(messageId: number, userId: number) {
+		return this.http.post(`${this.baseUrl}users/${userId}/messages/${messageId}`, {});
+	}
+
+	markMessageIsRead(userId: number, messageId: number) {
+		return this.http.post(`${this.baseUrl}users/${userId}/messages/${messageId}/read`, {})
+			.subscribe();
+	}
 }

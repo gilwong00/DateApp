@@ -81,7 +81,9 @@ namespace DatingApp.API.Controllers
 		[HttpPost]
 		public async Task<IActionResult> CreateMessage(int userId, MessageDataModel message)
 		{
-			if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+			var sender = await _repo.GetUser(userId);
+
+			if (sender.Id != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
 			{
 				return Unauthorized();
 			}
@@ -99,14 +101,69 @@ namespace DatingApp.API.Controllers
 
 			_repo.Add(newMessage);
 
-			var messageForReturn = _mapper.Map<MessageDataModel>(message);
-
 			if (await _repo.SaveAll())
 			{
-				return CreatedAtRoute("GetMessage", new { messageId = newMessage.Id }, messageForReturn);
+				var response = _mapper.Map<MessageViewModel>(newMessage);
+				return CreatedAtRoute("GetMessage", new { messageId = newMessage.Id }, response);
 			}
 
 			throw new Exception("Creating the message failed on save");
+		}
+
+		[HttpPost("{messageId}")]
+		public async Task<IActionResult> DeleteMessage(int messageId, int userId)
+		{
+			if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+			{
+				return Unauthorized();
+			}
+
+			var message = await _repo.GetMessage(messageId);
+
+			// Only delete if both parties delete the message
+			if (message.SenderId == userId)
+			{
+				message.SenderDeleted = true;
+			}
+
+			if (message.RecipientId == userId)
+			{
+				message.RecipientDeleted = true;
+			}
+
+			if (message.SenderDeleted && message.RecipientDeleted)
+			{
+				_repo.Delete(message);
+			}
+
+			if (await _repo.SaveAll())
+			{
+				return NoContent();
+			}
+
+			throw new Exception("Error deleting message");
+		}
+
+		[HttpPost("{messageId}/read")]
+		public async Task<IActionResult> MarkMassageIsRed(int userId, int messageId)
+		{
+			if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+			{
+				return Unauthorized();
+			}
+
+			var message = await _repo.GetMessage(messageId);
+
+			if (message.RecipientId != userId)
+			{
+				return Unauthorized();
+			}
+
+			message.isRead = true;
+			message.DateRead = DateTime.Now;
+
+			await _repo.SaveAll();
+			return NoContent();
 		}
 	}
 }
