@@ -19,11 +19,13 @@ namespace DatingApp.API.Controllers
 	[ApiController]
 	public class MessagesController : ControllerBase
 	{
-		private readonly IDatingRepository _repo;
+		private readonly IUserRepository _userRepo;
+		private readonly IMessageRepository _messageRepo;
 		private readonly IMapper _mapper;
-		public MessagesController(IDatingRepository repo, IMapper mapper)
+		public MessagesController(IMessageRepository messageRepo, IUserRepository userRepo, IMapper mapper)
 		{
-			_repo = repo;
+			_userRepo = userRepo;
+			_messageRepo = messageRepo;
 			_mapper = mapper;
 		}
 
@@ -36,7 +38,7 @@ namespace DatingApp.API.Controllers
 				return Unauthorized();
 			}
 
-			var message = await _repo.GetMessage(userId);
+			var message = await _messageRepo.GetMessage(userId);
 
 			if (message == null)
 			{
@@ -56,7 +58,7 @@ namespace DatingApp.API.Controllers
 
 			messageParams.UserId = userId;
 
-			var messages = await _repo.GetMessagesForUser(messageParams);
+			var messages = await _messageRepo.GetMessagesForUser(messageParams);
 
 			var response = _mapper.Map<IEnumerable<MessageViewModel>>(messages);
 
@@ -73,7 +75,7 @@ namespace DatingApp.API.Controllers
 				return Unauthorized();
 			}
 
-			var messages = await _repo.GetMessageThread(userId, recipientId);
+			var messages = await _messageRepo.GetMessageThread(userId, recipientId);
 			var messageThread = _mapper.Map<IEnumerable<MessageViewModel>>(messages);
 			return Ok(messageThread);
 		}
@@ -81,7 +83,7 @@ namespace DatingApp.API.Controllers
 		[HttpPost]
 		public async Task<IActionResult> CreateMessage(int userId, MessageDataModel message)
 		{
-			var sender = await _repo.GetUser(userId);
+			var sender = await _userRepo.GetUser(userId);
 
 			if (sender.Id != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
 			{
@@ -90,7 +92,7 @@ namespace DatingApp.API.Controllers
 
 			message.SenderId = userId;
 
-			var recipient = await _repo.GetUser(message.RecipientId);
+			var recipient = await _userRepo.GetUser(message.RecipientId);
 
 			if (recipient == null)
 			{
@@ -99,9 +101,9 @@ namespace DatingApp.API.Controllers
 
 			var newMessage = _mapper.Map<Message>(message);
 
-			_repo.Add(newMessage);
+			_messageRepo.Add(newMessage);
 
-			if (await _repo.SaveAll())
+			if (await _messageRepo.SaveAll())
 			{
 				var response = _mapper.Map<MessageViewModel>(newMessage);
 				return CreatedAtRoute("GetMessage", new { messageId = newMessage.Id }, response);
@@ -118,7 +120,7 @@ namespace DatingApp.API.Controllers
 				return Unauthorized();
 			}
 
-			var message = await _repo.GetMessage(messageId);
+			var message = await _messageRepo.GetMessage(messageId);
 
 			// Only delete if both parties delete the message
 			if (message.SenderId == userId)
@@ -133,10 +135,10 @@ namespace DatingApp.API.Controllers
 
 			if (message.SenderDeleted && message.RecipientDeleted)
 			{
-				_repo.Delete(message);
+				_messageRepo.Delete(message);
 			}
 
-			if (await _repo.SaveAll())
+			if (await _messageRepo.SaveAll())
 			{
 				return NoContent();
 			}
@@ -152,7 +154,7 @@ namespace DatingApp.API.Controllers
 				return Unauthorized();
 			}
 
-			var message = await _repo.GetMessage(messageId);
+			var message = await _messageRepo.GetMessage(messageId);
 
 			if (message.RecipientId != userId)
 			{
@@ -162,7 +164,7 @@ namespace DatingApp.API.Controllers
 			message.isRead = true;
 			message.DateRead = DateTime.Now;
 
-			await _repo.SaveAll();
+			await _messageRepo.SaveAll();
 			return NoContent();
 		}
 	}

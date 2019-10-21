@@ -45,9 +45,16 @@ namespace DatingApp.API
 			services.AddCors();
 			// gets setting from appsettings and binding it to our CloudinarySettings Class
 			services.Configure<CloudinarySettings>(Configuration.GetSection("CloudinarySettings"));
-			services.AddAutoMapper(typeof(DatingRepository).Assembly);
+
+			// Auto mapper assemblies
+			services.AddAutoMapper(typeof(UserRepository).Assembly);
+			services.AddAutoMapper(typeof(MessageRepository).Assembly);
+
+			// Repositories
 			services.AddScoped<IAuthRepository, AuthRepository>();
-			services.AddScoped<IDatingRepository, DatingRepository>();
+			services.AddScoped<IUserRepository, UserRepository>();
+			services.AddScoped<IMessageRepository, MessageRepository>();
+		
 			services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 				.AddJwtBearer(options =>
 				{

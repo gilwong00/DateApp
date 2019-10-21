@@ -8,23 +8,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DatingApp.API.Data
 {
-	public class DatingRepository : IDatingRepository
+	public class UserRepository : BaseEntity, IUserRepository
 	{
 		private readonly DataContext _context;
-		public DatingRepository(DataContext context)
+
+		public UserRepository(DataContext context) : base(context)
 		{
 			_context = context;
-		}
-
-		public void Add<T>(T entity) where T : class
-		{
-			// When we add, this will be saved in memory until we actually save our changes to our DB
-			_context.Add(entity);
-		}
-
-		public void Delete<T>(T entity) where T : class
-		{
-			_context.Remove(entity);
 		}
 
 		public async Task<User> GetUser(int id)
@@ -99,11 +89,9 @@ namespace DatingApp.API.Data
 			}
 		}
 
-		public async Task<bool> SaveAll()
+		public async Task<Photo> GetMainUserPhoto(int userId)
 		{
-			// if SaveChangesAsync returns 0 that means no changes were saved
-			// SaveChangesAsync will return the number of changes saved
-			return await _context.SaveChangesAsync() > 0;
+			return await _context.Photos.Where(u => u.UserId == userId).FirstOrDefaultAsync(p => p.IsMain);
 		}
 
 		public async Task<Photo> GetPhoto(int id)
@@ -112,66 +100,9 @@ namespace DatingApp.API.Data
 			return photo;
 		}
 
-		public async Task<Photo> GetMainUserPhoto(int userId)
-		{
-			return await _context.Photos.Where(u => u.UserId == userId).FirstOrDefaultAsync(p => p.IsMain);
-		}
-
 		public async Task<Like> GetLike(int userId, int recipientId)
 		{
 			return await _context.Likes.FirstOrDefaultAsync(u => u.LikerId == userId && u.LikeeId == recipientId);
-		}
-
-		public async Task<Message> GetMessage(int messageId)
-		{
-			return await _context.Messages.FirstOrDefaultAsync(m => m.Id == messageId);
-		}
-
-		public async Task<PagedList<Message>> GetMessagesForUser(MessageParams messageParams)
-		{
-			var messages = _context.Messages
-				.Include(u => u.Sender) // get fully hydrated Sender
-					.ThenInclude(p => p.Photos) // get photo for sender
-				.Include(u => u.Recipient) // get fully hydrated recipient
-					.ThenInclude(p => p.Photos) // get photo for recipient
-				.AsQueryable();
-
-			switch (messageParams.MessageContainer)
-			{
-				// messages a user has received
-				case "Inbox":
-					messages = messages.Where(m => m.RecipientId == messageParams.UserId && m.RecipientDeleted == false);
-					break;
-				case "Outbox":
-					messages = messages.Where(m => m.SenderId == messageParams.UserId && m.SenderDeleted == false);
-					break;
-				default:
-					messages = messages.Where(m => m.RecipientId == messageParams.UserId &&
-						m.RecipientDeleted == false &&
-						m.isRead == false
-					);
-					break;
-			}
-
-			messages = messages.OrderByDescending(m => m.DateSent);
-			return await PagedList<Message>.CreateAsync(messages, messageParams.PageNumber, messageParams.PageSize);
-		}
-
-		public async Task<IEnumerable<Message>> GetMessageThread(int userId, int recipientId)
-		{
-			var messages = await _context.Messages
-				.Include(u => u.Sender)
-					.ThenInclude(p => p.Photos)
-				.Include(u => u.Recipient)
-					.ThenInclude(p => p.Photos)
-				// Filteriing a convo between 2 users
-				.Where(
-					m => m.RecipientId == userId && m.RecipientDeleted == false && m.SenderId == recipientId ||
-					m.RecipientId == recipientId && m.SenderId == userId && m.SenderDeleted == false)
-				.OrderByDescending(m => m.DateSent)
-				.ToListAsync();
-
-			return messages;
 		}
 	}
 }
